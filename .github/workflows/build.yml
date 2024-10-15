@@ -19,6 +19,17 @@ jobs:
         run: |
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      - name: Check toolchain version
+        run: |
+          elan --version
+          lake --version
+          lean --version
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .lake
+          key: lake-${{ runner.os }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-${{ runner.os }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}
       - name: Fetch cache
         run: lake exe cache get
       - name: Build doc-gen4
@@ -30,9 +41,14 @@ jobs:
             Arithmetization:docs \
             Incompleteness:docs \
             Summary:docs
+      - name: Save cache
+        uses: actions/cache/save@v4
+        with:
+          path: .lake
+          key: lake-${{ runner.os }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
       - name: Upload documents
         uses: actions/upload-pages-artifact@v1
         with:
-          path: .lake/build/doc 
+          path: .lake/build/doc
       - name: Deploy
         uses: actions/deploy-pages@v1
