@@ -1,3 +1,4 @@
+import Mathlib.Tactic.Recall
 import Foundation.Modal.Kripke.GL.Completeness
 
-#print axioms LO.Modal.Kripke.GL_complete
+recall LO.Modal.Kripke.GL_complete
