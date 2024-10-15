@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      - name: Fetch cache
+        run: lake exe cache get
+      - name: Build doc-gen4
+        run: lake build doc-gen4
+      - name: Generate documents
+        run: |
+          lake build \
+            Foundation:docs \
+            Arithmetization:docs \
+            Incompleteness:docs \
+            Summary:docs
+      - name: Upload documents
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: .lake/build/doc 
+      - name: Deploy
+        uses: actions/deploy-pages@v1
